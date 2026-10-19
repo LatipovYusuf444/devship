@@ -1,0 +1,1 @@
+PASS: actual installed ds shim self-updated 2.0.0 → simulated 2.0.1 using pinned fake GitHub HTTPS transport, real npm, verified tar and isolated global prefix. No live GitHub/Telegram request; no user project touched.

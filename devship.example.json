@@ -1,0 +1,12 @@
+{
+  "remote": "origin",
+  "base": "main",
+  "protectedBranches": ["release/*"],
+  "exclude": ["scratch/**", "**/*.log"],
+  "allowSecretPaths": [],
+  "allowNoChecks": false,
+  "maxScanBytes": 1048576,
+  "timeoutMs": 600000,
+  "telegram": true,
+  "checksMode": "both"
+}

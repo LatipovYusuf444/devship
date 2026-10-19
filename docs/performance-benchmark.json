@@ -1,0 +1,14 @@
+[
+  {
+    "checksMode": "both",
+    "executions": 6,
+    "taskSeconds": 6.57,
+    "wallSeconds": 15.778
+  },
+  {
+    "checksMode": "final",
+    "executions": 3,
+    "taskSeconds": 3.2700000000000005,
+    "wallSeconds": 11.265
+  }
+]

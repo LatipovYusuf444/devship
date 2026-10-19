@@ -1,0 +1,10 @@
+[{"checksMode":"both","executions":6,"taskSeconds":6.57,"wallSeconds":15.778},{"checksMode":"final","executions":3,"taskSeconds":3.2700000000000005,"wallSeconds":11.265}]
+✔ controlled heavy-check benchmark compares two complete passes with one complete pass (28883.5317ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 28989.0683
