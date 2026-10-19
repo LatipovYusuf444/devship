@@ -28,7 +28,7 @@ devship --version
 `DEVSHIP_PAPKASI` — zipdan chiqarilgan `devship` papkasining haqiqiy manzili. Yoki `.tgz` turgan papkada:
 
 ```text
-npm install --global --ignore-scripts ./devship-cli-local-2.0.0.tgz
+npm install --global --ignore-scripts ./devship-cli-local-2.0.1.tgz
 ```
 
 Windows PowerShell `npm.ps1` ni bloklasa, xuddi shu buyruqda `npm.cmd` ishlating. `devship.ps1` bloklansa `devship.cmd` ishlating; execution policy’ni o‘zgartirish shart emas. `devship` topilmasa terminalni qayta oching va npm global bin papkasi PATH ichida ekanini tekshiring. macOS/Linux’da ruxsat muammosi bo‘lsa Node version manager ishlatish qulay.

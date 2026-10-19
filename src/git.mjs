@@ -92,7 +92,20 @@ export function preflight(git, config) {
 
 export function scanHistory(git, config, remoteFeature, baseRef, verifiedBlobs = new Set()) {
   const exclusions = [baseRef]; if (git.exists(remoteFeature)) exclusions.push(remoteFeature);
-  const commits = git.exec('rev-list', 'HEAD', '--not', ...exclusions).split('\n').filter(Boolean);
+  const publishedTrees = exclusions.map(ref => git.oid(ref));
+  const publishedAtPath = new Map();
+  const alreadyPublished = (path, mode, oid) => {
+    if (!publishedAtPath.has(path)) {
+      const entries = new Set();
+      for (const ref of publishedTrees) {
+        const match = /^(\d+) (\w+) ([a-f0-9]+)\t/.exec(git.raw('--literal-pathspecs', 'ls-tree', '-z', ref, '--', path));
+        if (match?.[2] === 'blob') entries.add(`${match[1]}:${match[3]}`);
+      }
+      publishedAtPath.set(path, entries);
+    }
+    return publishedAtPath.get(path).has(`${mode}:${oid}`);
+  };
+  const commits = git.exec('rev-list', 'HEAD', '--not', ...publishedTrees).split('\n').filter(Boolean);
   for (const commit of commits) {
     // Compare against all parents (including merge commits); deleted blobs were scanned in earlier commits.
     const paths = splitZ(git.raw('diff-tree', '--root', '-m', '-r', '--no-commit-id', '--name-only', '--no-renames', '-z', commit, '--'));
@@ -102,6 +115,10 @@ export function scanHistory(git, config, remoteFeature, baseRef, verifiedBlobs =
       const match = /^(\d+) (\w+) ([a-f0-9]+)\t/.exec(entry);
       if (!match || match[2] !== 'blob' || match[1] === '120000') fail('SAFETY', `Tarixda symlink/submodule mavjud: ${JSON.stringify(path)}. Qo‘lda tekshiring.`);
       inspectPath(path, config, { history: true });
+      // A merge compares against every parent, so it can mention content already on main.
+      // Trust only the exact published path+mode+OID; never put this exemption in the
+      // content-scan cache, which would incorrectly exempt copies at a new path.
+      if (alreadyPublished(path, match[1], match[3])) continue;
       const oid = match[3]; if (verifiedBlobs.has(oid)) continue;
       const size = Number(git.exec('cat-file', '-s', oid));
       if (size > config.maxScanBytes) fail('SAFETY', `Push qilinmagan tarixda katta blob: ${JSON.stringify(path)}. Qo‘lda tekshiring.`);

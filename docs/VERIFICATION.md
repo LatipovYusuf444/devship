@@ -29,3 +29,13 @@ Mahalliy amaliy sinov Windows/Node 24’da bajarildi. CI va reliz workflow Windo
 Reliz assetlari va public o‘rnatish alohida chiqarish bosqichida tekshiriladi. Secrets/global sozlamalar, foydalanuvchi loyiha fayllari va Telegram outbox source/release tarkibiga kiritilmaydi.
 
 Yakuniy to‘liq suite: 114/114 PASS, fail 0, skip 0, exit 0, 220.210 soniya.
+
+## 2.0.1 — published-blob regression
+
+Merge commitni har bir parentga nisbatan skanlash oldindan base’da bor kontentni ham yangi deb qayta tekshirayotgani real holatda aniqlandi. Bir xil path+mode+blob uchun nashr qilingan baseline istisnosi qo‘shildi. Symlink/path tekshiruvi undan oldin ishlaydi, istisno verifiedBlobs keshiga yozilmaydi va baseline OIDlari har bir scan boshida qotiriladi.
+
+Ijobiy regressiya oldin SECRET bilan yiqildi, tuzatishdan keyin feature push bilan o‘tdi. Yangi manzilga ko‘chirilgan bir xil blob va o‘sha manzildagi boshqa kalit bloklanishi ham tekshirildi. Mavjud performance/cache testlari bilan maqsadli 10/10 test o‘tdi. Main merge va xatoda pushni to‘xtatish tartibi saqlangan.
+
+Mustaqil read-only ko‘rikda Important/Critical nuqson topilmadi. Kichik tavsiya: remote-feature baseline, fayl mode o‘zgarishi va oldindan nashr qilingan taqiqlangan path uchun alohida regressiyalar qamrovni oshirishi mumkin; ushbu qo‘shimcha qamrov keyinga qoldirildi, aniqlangan funksional nuqson yo‘q.
+
+2.0.1 yakuniy to‘liq suite: 117/117 PASS, fail 0, skip 0, exit 0, 300.429 soniya.

@@ -1,5 +1,11 @@
 # O‘zgarishlar
 
+## 2.0.1
+
+Main/feature merge commitlarining barcha parentlariga nisbatan diffida oldindan remote’da bo‘lgan fayllar ham chiqishi hisobga olindi. Tarix skaneri faqat nashr qilingan refdagi aynan bir xil path+mode+blob uchun kontentni qayta yangi sir sifatida skanlamaydi. Yo‘l/symlink himoyasi qoladi; yangi yo‘lga ko‘chirilgan yoki boshqa blobga o‘zgartirilgan kalit bloklanadi. Bu istisno blob skan keshiga qo‘shilmaydi. Remote baseline commit OIDlari scan boshida qotiriladi.
+
+Main joriy feature branchga merge qilinishi va faqat o‘sha branch push qilinishi saqlangan. Umumiy avtomatik konflikt yechish qo‘shilmadi.
+
 ## 2.0.0
 
 GitHub Releases tarqatishi, kunlik terminal yangilanish xabari, `ds update check` va checksum/arxiv tekshiradigan `ds update` qo‘shildi. Global paket zaxiralanadi, install xatosida eski versiyani qayta o‘rnatishga uriniladi. Tekshiruv va o‘rnatish davomida boshqa shu foydalanuvchining v2 runlari installation lock orqali cheklanadi. Hech qanday fon xizmati yoki repo ichidagi yangilanish sozlamasi yo‘q.
