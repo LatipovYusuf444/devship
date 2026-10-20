@@ -4,7 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { redact } from './process.mjs';
 import { telegramCall, TelegramError } from './telegram-api.mjs';
 import { loadTelegramSettings, atomicJson } from './telegram-store.mjs';
-import { renderConflictReport } from './conflicts.mjs';
+import { pushCard, failureCard } from './telegram-format.mjs';
+import { sourceExcerpt, diagnosticLocations } from './notification-source.mjs';
 
 const clean = value => redact(String(value ?? '')).replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ');
 const clip = (value, length) => { let result = ''; for (const char of clean(value)) { if (result.length + char.length > length) break; result += char; } return result; };
@@ -22,17 +23,9 @@ export function fullPushText(report, timeZone) {
     '', 'Fayllar:', ...report.files.map(f => `• ${clean(f.status)} ${clean(f.path)}`)].join('\n');
 }
 export function formatPushMessage(report, timeZone) {
-  const full = fullPushText(report, timeZone); if (full.length <= 4000) return full;
-  return [...header(report, timeZone), '', 'Commitlar (qisqa):', ...report.commits.slice(0, 5).map(c => `• ${c.hash.slice(0, 12)} ${clip(c.subject, 100)}`),
-    ...(report.commits.length > 5 ? [`… yana ${report.commits.length - 5} commit`] : []), '', 'Fayllar (qisqa):',
-    ...report.files.slice(0, 15).map(f => `• ${clean(f.status)} ${clip(f.path, 100)}`),
-    ...(report.files.length > 15 ? [`… yana ${report.files.length - 15} fayl`] : []), '', 'To‘liq ro‘yxat push-hisobot.txt ilovasida va kompyuterdagi hisobotda.'].join('\n');
+  return pushCard(report, timeZone).html;
 }
 
-const failureStages = {
-  prepare: 'Tayyorgarlik', 'checks-before-commit': 'Commitdan oldingi tekshiruv', commit: 'Stage/commit', fetch: 'Fetch',
-  merge: 'Branchlarni birlashtirish', 'checks-after-merge': 'Mergedan keyingi tekshiruv', 'before-push': 'Pushdan oldingi nazorat', push: 'Push'
-};
 export function collectFailureReport({ git, branch, remote, stage, error, failedAt }) {
   const raw = redact(String(error.message || error)).replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
   // Send diagnostic lines, not full test output, source frames, diffs or environment dumps.
@@ -46,22 +39,17 @@ export function collectFailureReport({ git, branch, remote, stage, error, failed
   const argv = error.check?.argv || [];
   const inline = argv.findIndex(arg => /^(?:--(?:eval|print)(?:=|$)|-[ep])/.test(arg));
   const check = argv.length ? (inline >= 0 ? argv.slice(0, inline).map(clean).join(' ') + ' [inline dastur]' : argv.map(clean).join(' ')) : null;
+  const conflict = error.conflictReport ? { ...error.conflictReport, files: error.conflictReport.files.map((file, index) => ({ ...file,
+    snippets: index < 6 ? (file.markerRanges || []).slice(0, 2).map(range => sourceExcerpt(git.root, file.path, { start: range.start, end: range.end || range.start })) : [{ text: null, reason: 'Kod parchalari dastlabki 6 ta fayl uchun berildi.' }] })) } : null;
   return JSON.parse(redact(JSON.stringify({ project: basename(git.root), branch, remote, stage, failedAt, code: error.code || 'INTERNAL',
-    summary: clip(raw.split(/\r?\n/)[0], 600), check, diagnostics, conflict: error.conflictReport || null })));
+    actor: git.result?.(['config', 'user.name']).stdout.trim() || 'Aniqlanmadi',
+    summary: clip(raw.split(/\r?\n/)[0], 600), check, diagnostics, locations: diagnosticLocations(git.root, diagnostics, error.check?.cwd || git.root), conflict })));
 }
 export function fullFailureText(report, timeZone) {
-  return [report.conflict ? '⛔ DevShip: KONFLIKT — PUSH BAJARILMADI' : '⛔ DevShip: XATO — JARAYON TO‘XTADI',
-    `Loyiha: ${clip(report.project, 180)}`, `Branch: ${clip(report.branch, 220)}`, `Remote: ${clip(report.remote, 80)}`,
-    `Sana/soat: ${localTime(report.failedAt, timeZone)}`, `UTC: ${clean(report.failedAt)}`,
-    `Bosqich: ${clean(failureStages[report.stage] || report.stage)}`, `Xato kodi: ${clean(report.code)}`,
-    ...(report.check ? [`Tekshiruv: ${clip(report.check, 300)}`] : []), '',
-    ...(report.conflict ? [renderConflictReport(report.conflict)] : [clean(report.summary), ...report.diagnostics]), '',
-    report.stage === 'push' ? 'Push tasdiqlanmadi. Remote holatini tekshiring; avtomatik qayta push qilinmadi.' : 'Push bajarilmadi. Lokal ish saqlangan; xatoni qo‘lda tuzating.',
-    'DevShip konflikt yoki loyiha kodini avtomatik tuzatmaydi.'].join('\n');
+  return failureCard(report, timeZone).plain;
 }
 export function formatFailureMessage(report, timeZone) {
-  const full = fullFailureText(report, timeZone);
-  return full.length <= 4000 ? full : full.slice(0, 3300).replace(/[\uD800-\uDBFF]$/, '') + '\n… To‘liq hisobot xato-hisobot.txt ilovasida.';
+  return failureCard(report, timeZone).html;
 }
 
 export function collectPushReport({ git, branch, remote, before, after, pushedAt }) {
@@ -70,7 +58,8 @@ export function collectPushReport({ git, branch, remote, before, after, pushedAt
   const values = git.raw('log', '-z', '--format=%H%x00%an%x00%aI%x00%s', `${before}..${after}`, '--').split('\0');
   if (values.at(-1) === '') values.pop();
   const commits = []; for (let i = 0; i + 3 < values.length; i += 4) commits.push({ hash: values[i], author: values[i + 1], date: values[i + 2], subject: values[i + 3] });
-  return JSON.parse(redact(JSON.stringify({ project: basename(git.root), branch, remote, before, after, pushedAt, commits, files })));
+  return JSON.parse(redact(JSON.stringify({ project: basename(git.root), branch, remote, before, after, pushedAt, commits, files,
+    actor: git.result?.(['config', 'user.name']).stdout.trim() || 'Aniqlanmadi' })));
 }
 function outboxDirectory(git) {
   const directory = join(git.exec('rev-parse', '--absolute-git-dir'), 'devship-telegram');
@@ -81,8 +70,10 @@ function outboxDirectory(git) {
 
 async function deliver(record, path, settings, fetchFn) {
   try {
+    if (record.parseMode && record.parseMode !== 'HTML') throw new TelegramError('Xabar formatini o‘qib bo‘lmadi; yuborilmadi.');
     if (!record.summaryMessageId) {
       const result = await telegramCall(settings.botToken, 'sendMessage', { chat_id: record.chatId, text: record.text, link_preview_options: { is_disabled: true },
+        ...(record.parseMode ? { parse_mode: record.parseMode } : {}),
         ...(record.threadId ? { message_thread_id: record.threadId } : {}) }, { fetchFn });
       if (!Number.isSafeInteger(result?.message_id) || result.message_id < 1) throw new TelegramError('Telegram xabar tasdig‘i o‘qilmadi.', true);
       record.summaryMessageId = result.message_id; atomicJson(path, record);
@@ -109,10 +100,10 @@ export async function notifyPush(context, options = {}) {
   if (context.config.telegram === false) return { status: 'disabled' };
   const settings = options.settings || loadTelegramSettings();
   if (!settings?.enabled) return { status: 'disabled' };
-  const report = collectPushReport(context), full = fullPushText(report, settings.timeZone);
+  const report = collectPushReport(context), full = fullPushText(report, settings.timeZone), card = pushCard(report, settings.timeZone);
   const record = { version: 1, id: randomUUID(), status: 'pending', chatId: settings.chatId, chatTitle: settings.chatTitle,
     ...(settings.threadId ? { threadId: settings.threadId } : {}),
-    timeZone: settings.timeZone, report, text: formatPushMessage(report, settings.timeZone), attachmentText: full.length > 4000 ? full : null };
+    timeZone: settings.timeZone, report, parseMode: 'HTML', text: card.html, attachmentText: full.length > 4000 || card.omitted ? full : null };
   const path = join(outboxDirectory(context.git), `${record.id}.json`); atomicJson(path, record);
   const result = await deliver(record, path, settings, options.fetchFn);
   if (result.status === 'sent') context.log(`Telegram: ${clean(settings.chatTitle || settings.chatId)} guruhiga push xabari yuborildi.`);
@@ -124,10 +115,10 @@ export async function notifyFailure(context, options = {}) {
   if (context.config.telegram === false) return { status: 'disabled' };
   const settings = options.settings || loadTelegramSettings();
   if (!settings?.enabled) return { status: 'disabled' };
-  const report = collectFailureReport(context), full = fullFailureText(report, settings.timeZone);
+  const report = collectFailureReport(context), card = failureCard(report, settings.timeZone), full = card.plain;
   const record = { version: 1, kind: 'failure', id: randomUUID(), status: 'pending', chatId: settings.chatId, chatTitle: settings.chatTitle,
     ...(settings.threadId ? { threadId: settings.threadId } : {}), timeZone: settings.timeZone, report,
-    text: formatFailureMessage(report, settings.timeZone), attachmentText: full.length > 4000 ? full : null };
+    parseMode: 'HTML', text: card.html, attachmentText: full.length > 4000 || card.omitted ? full : null };
   const path = join(outboxDirectory(context.git), `${record.id}.json`); atomicJson(path, record);
   const result = await deliver(record, path, settings, options.fetchFn);
   if (result.status === 'sent') context.log(`Telegram: ${clean(settings.chatTitle || settings.chatId)} guruhiga konflikt/xato xabari yuborildi.`);

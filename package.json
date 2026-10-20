@@ -1,11 +1,11 @@
 {
   "name": "devship-cli-local",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Safe cross-platform Git validation, merge and feature-branch shipping CLI",
   "type": "module",
   "bin": { "devship": "bin/devship.mjs", "ds": "bin/devship.mjs" },
   "engines": { "node": ">=22" },
-  "scripts": { "test": "node --test --test-concurrency=4 test/unit.test.mjs test/ship.test.mjs test/edge.test.mjs test/conflicts.test.mjs test/telegram.test.mjs test/failure-notifications.test.mjs test/performance.test.mjs test/setup.test.mjs test/locks.test.mjs test/telegram-health.test.mjs test/updates.test.mjs test/published-blobs.test.mjs test/daily-reports.test.mjs test/report-scheduler.test.mjs test/report-integration.test.mjs test/review-tools.test.mjs", "check": "node --check bin/devship.mjs", "release:assets": "node scripts/release-assets.mjs" },
+  "scripts": { "test": "node --test --test-concurrency=4 test/unit.test.mjs test/ship.test.mjs test/edge.test.mjs test/conflicts.test.mjs test/telegram.test.mjs test/failure-notifications.test.mjs test/performance.test.mjs test/setup.test.mjs test/locks.test.mjs test/telegram-health.test.mjs test/updates.test.mjs test/published-blobs.test.mjs test/daily-reports.test.mjs test/report-scheduler.test.mjs test/report-integration.test.mjs test/review-tools.test.mjs test/telegram-cards.test.mjs", "check": "node --check bin/devship.mjs", "release:assets": "node scripts/release-assets.mjs" },
   "files": ["bin/", "src/", "scripts/", "test/", "docs/", "README.md", "LICENSE", "devship.example.json"],
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/LatipovYusuf444/devship.git" },

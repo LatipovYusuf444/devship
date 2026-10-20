@@ -17,7 +17,7 @@ const labels = new Map(Object.entries({
   hisobotlar: 'Hisobotlar', orders: 'Buyurtmalar', kirim: 'Kirim', navoiyazot: 'Navoiyazot', login: 'Kirish', profile: 'Profil',
   leftovers: 'Qoldiqlar', 'export-contracts': 'Eksport shartnomalari', 'ticket-groups': 'Yuk hujjatlari', lots: 'Yuklash', payments: 'To‘lovlar'
 }));
-function pageLabel(path) {
+export function pageLabel(path) {
   const lower = path.toLowerCase().replaceAll('\\', '/');
   if (/(?:^|\/)(?:api|services?|tests?|__tests__|node_modules|\.next|dist)(?:\/|$)|\.(?:test|spec)\.|(?:^|\/)(?:middleware|next\.config|vite\.config)/.test(lower)) return null;
   if (!/\.(?:[jt]sx?|vue|svelte)$/.test(lower)) return null;

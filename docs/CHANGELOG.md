@@ -1,5 +1,11 @@
 # O‘zgarishlar
 
+## 2.3.0
+
+- Telegram push/konflikt/xato xabarlari HTML kartochka, qalin sarlavha, bo‘sh qatorlar, blockquote va monospace kod ramkalarida chiqadi. Xato 🔴, muvaffaqiyat 🟢 bilan ajratiladi.
+- Konfliktda ikki branch, sahifa/fayl/qatorlar va oxirgi commit mualliflari; diagnostikada qator/ustun hamda xavfsiz qisqa source parchasi mavjud. Ichki paketlarda xato yo‘li tekshiruv katalogiga nisbatan yechiladi.
+- Maxfiy fayl/token/parol, binary, symlink va repo tashqarisidagi kod yuborilmaydi. HTML escape, teg buzilmasdan qisqartirish, ilova va eski plain-text outbox retry saqlangan.
+
 ## 2.2.0
 
 - Fetchdan keyin, merge’dan oldin yangi lokal ishlar, remote feature va main fayllari alohida xulosa qilinadi. Dry-run lokal kesh ekanini bildiradi.

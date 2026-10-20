@@ -6,7 +6,9 @@ Windows, macOS va Linux uchun Node.js CLI. Runtime kutubxonalar yo‘q. AI yoki 
 
 ## Kundalik ishlar hisoboti
 
-2.2.0 da pushdan oldin lokal ishlar, remote feature va main’dan keladigan fayllar alohida ko‘rsatiladi. Pushdan keyin `ds.cmd mr` GitLab uchun tayyor sarlavha/tavsifni ko‘rsatadi; `ds.cmd reports edit` bilan 18:00 gacha kundalik ishlarni tahrirlash yoki birlashtirish mumkin. [O‘zbekcha foydalanish yo‘riqnomasi](docs/REVIEW-TOOLS.md).
+2.3.0 da Telegram xabarlari bo‘limlar va ramkalarga ajratildi: 🟢 tasdiqlangan push, 🔴 konflikt/xato, sahifa/fayl/qator, branch va mualliflar, xavfsiz qisqa kod parchalari. [Telegram xabarlari yo‘riqnomasi](docs/TELEGRAM-CARDS.md).
+
+Pushdan oldin lokal ishlar, remote feature va main’dan keladigan fayllar alohida ko‘rsatiladi. Pushdan keyin `ds.cmd mr` GitLab uchun tayyor sarlavha/tavsifni ko‘rsatadi; `ds.cmd reports edit` bilan 18:00 gacha kundalik ishlarni tahrirlash yoki birlashtirish mumkin. [O‘zbekcha foydalanish yo‘riqnomasi](docs/REVIEW-TOOLS.md).
 
 Muvaffaqiyatli pushlarda qilingan ishlarni saqlab, har kuni **18:00 (Asia/Tashkent)** Telegram guruhiga loyiha bo‘yicha ajratilgan raqamli hisobot yuborish mumkin:
 
@@ -41,7 +43,7 @@ devship --version
 `DEVSHIP_PAPKASI` — zipdan chiqarilgan `devship` papkasining haqiqiy manzili. Yoki `.tgz` turgan papkada:
 
 ```text
-npm install --global --ignore-scripts ./devship-cli-local-2.2.0.tgz
+npm install --global --ignore-scripts ./devship-cli-local-2.3.0.tgz
 ```
 
 Windows PowerShell `npm.ps1` ni bloklasa, xuddi shu buyruqda `npm.cmd` ishlating. `devship.ps1` bloklansa `devship.cmd` ishlating; execution policy’ni o‘zgartirish shart emas. `devship` topilmasa terminalni qayta oching va npm global bin papkasi PATH ichida ekanini tekshiring. macOS/Linux’da ruxsat muammosi bo‘lsa Node version manager ishlatish qulay.

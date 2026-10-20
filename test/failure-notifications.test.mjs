@@ -24,6 +24,7 @@ test('main conflict sends metadata to Telegram and preserves the conflict withou
   assert.equal(messages.length, 1); assert.equal(successCalls, 0);
   const text = messages[0].text;
   for (const expected of ['feature/demo', 'origin/main', 'app.txt', 'Remote Author', 'DevShip Test', '1–5', 'Asia/Tashkent']) assert.ok(text.includes(expected), expected);
+  // app.txt is outside the source-extension allowlist; its body remains private.
   assert.doesNotMatch(text, /LOCAL_SOURCE_BODY|REMOTE_SOURCE_BODY/);
   assert.ok(existsSync(join(f.repo, '.git', 'MERGE_HEAD')));
   assert.equal(existsSync(join(f.repo, '.git', 'devship.lock')), false);
