@@ -6,7 +6,7 @@ import { ship } from '../src/ship.mjs';
 import { collectOwnWork, recordSuccessfulPush, reportSettings, previewReports, prepareSuccessfulPush, reconcileWorkIntents, settleWorkIntent } from '../src/daily-reports.mjs';
 import { Git, repository } from '../src/git.mjs';
 import { unlinkSync, readFileSync, readdirSync, chmodSync } from 'node:fs';
-const muted = { log: () => {}, notify: async () => {}, notifyError: async () => {}, prepareWork: () => null, recordWork: () => null };
+const muted = { log: () => {}, notify: async () => {}, notifyError: async () => {}, prepareWork: () => null, recordWork: () => null, draftMR: () => null };
 const settings = { enabled: true, chatId: '-123456' };
 
 test('a real push records own page work while excluding incoming main commits; repeat no-op does not record', async t => {

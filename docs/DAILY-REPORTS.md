@@ -49,6 +49,8 @@ ds.cmd reports disable
 
 Preview guruhga yubormaydi. Sozlama global foydalanuvchi katalogidagi `reports/` ichida saqlanadi; Git loyihalariga qo‘shilmaydi. Disable saqlangan ishlarni o‘chirmaydi.
 
+18:00 gacha `ds.cmd reports edit` bilan band matnini o‘zgartirish yoki bir loyiha/branchdagi takror bandlarni birlashtirish mumkin. `1` bandni tanlaydi, `1,2` birlashtiradi, Enter tugatadi. Asl push yozuvlari saqlanadi; yuborishga tayyorlangan hisobot tahrirlanmaydi. [Batafsil yo‘riqnoma](REVIEW-TOOLS.md).
+
 Aniq Telegram rad javobidan keyin keyingi urinish mumkin. Tarmoq uzilishi sababli xabar yetib borgani noaniq bo‘lsa avtomatik takror yuborish to‘xtatiladi. Guruhni tekshirib, kerak bo‘lsa takror ehtimolini aniq tasdiqlang:
 
 ```powershell

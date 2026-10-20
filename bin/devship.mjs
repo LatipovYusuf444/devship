@@ -5,6 +5,7 @@ import { telegramCommand } from '../src/telegram-setup.mjs';
 import { setupProject, doctor } from '../src/project-setup.mjs';
 import { applyUpdate, checkUpdate, updateNotice, installationGate, currentVersion } from '../src/updates.mjs';
 import { reportCommand } from '../src/report-commands.mjs';
+import { showMergeRequest } from '../src/merge-request.mjs';
 
 const help = `DevShip ${currentVersion} — xavfsiz tekshirish, commit, merge va push
 
@@ -13,6 +14,8 @@ Ishlatish: devship [--dry-run] [-m "commit matni"] [--config path]
            devship setup | doctor | update [check]
            devship telegram setup|status|health|test|retry|disable
            devship reports setup|status|preview|run-due|disable
+           devship reports edit [YYYY-MM-DD]
+           devship mr
 
 Qisqa buyruq: ds (Windows PowerShell’da ds.cmd). Barcha parametrlar bir xil.
 Yangilanish mavjud bo‘lsa terminalda xabar chiqadi. Qo‘llash: ds update.
@@ -55,8 +58,12 @@ try {
     }
   } else
   if (args[0] === 'reports') {
-    if (!['status', 'preview'].includes(args[1])) releaseInstallation = installationGate();
+    if (!['status', 'preview', 'edit'].includes(args[1])) releaseInstallation = installationGate();
     await reportCommand(args.slice(1));
+  } else
+  if (args[0] === 'mr') {
+    if (args.length !== 1) fail('USAGE', 'Ishlatish: ds mr');
+    showMergeRequest();
   } else
   if (args[0] === 'telegram') {
     if (args.length !== 2) fail('USAGE', 'Ishlatish: devship telegram setup|status|test|retry|disable');

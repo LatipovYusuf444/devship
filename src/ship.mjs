@@ -10,6 +10,8 @@ import { notifyPush, notifyFailure } from './telegram.mjs';
 import { setupProject } from './project-setup.mjs';
 import { recordSuccessfulPush, prepareSuccessfulPush, settleWorkIntent } from './daily-reports.mjs';
 import { summarizeWork } from './work-summary.mjs';
+import { buildChangeSummary, formatChangeSummary } from './change-summary.mjs';
+import { createMergeRequestDraft } from './merge-request.mjs';
 
 function scanPending(git, config) {
   const paths = git.pending();
@@ -43,7 +45,7 @@ function merge(git, ref, branch, config, log) {
   git.assertIdentity(branch); git.assertClean();
 }
 
-export async function ship({ cwd = process.cwd(), dryRun = false, message, configFile, init = false, work = [], log = console.log, notify = notifyPush, notifyError = notifyFailure, recordWork = recordSuccessfulPush, prepareWork = prepareSuccessfulPush } = {}) {
+export async function ship({ cwd = process.cwd(), dryRun = false, message, configFile, init = false, work = [], log = console.log, notify = notifyPush, notifyError = notifyFailure, recordWork = recordSuccessfulPush, prepareWork = prepareSuccessfulPush, draftMR = createMergeRequestDraft } = {}) {
   const output = log; log = value => output(redact(value));
   const root = repository(cwd), config = loadConfig(root, configFile);
   const git = new Git(root, config.timeoutMs);
@@ -72,6 +74,8 @@ export async function ship({ cwd = process.cwd(), dryRun = false, message, confi
     log(config.checksMode === 'final' ? 'Tekshiruv rejimi: final — barcha checks merge’dan keyin, pushdan oldin bir marta.' : 'Tekshiruv rejimi: both — commitdan oldin va merge’dan keyin.');
     if (dryRun) {
       log('DRY RUN: buyruqlar bajarilmaydi; fetch qilinmaydi, remote holati tekshirilmaydi.');
+      const baseRef = `refs/remotes/${config.remote}/${config.base}`, featureRef = `refs/remotes/${config.remote}/${branch}`;
+      log(formatChangeSummary(buildChangeSummary({ git, workHead: originalHead, baseHead: git.exists(baseRef) ? git.oid(baseRef) : null, remoteHead: git.exists(featureRef) ? git.oid(featureRef) : null, pending: paths, notes: work }), { branch, remote: config.remote, base: config.base, cached: true }));
       for (const task of tasks) log(`Reja: ${task.argv.join(' ')} (cwd: ${task.cwd})`);
       for (const path of paths) log(`Fayl: ${JSON.stringify(path)}`);
       log(paths.length ? `Commit: ${message || sensibleMessage(paths)}` : 'Yangi commit kerak emas.');
@@ -107,6 +111,7 @@ export async function ship({ cwd = process.cwd(), dryRun = false, message, confi
     const remoteFeature = `refs/remotes/${config.remote}/${branch}`;
     if (!git.exists(baseRef)) fail('BASE', `${config.remote}/${config.base} topilmadi. base sozlamasini tekshiring. Lokal commitlar saqlangan.`);
     const notificationBase = git.oid(git.exists(remoteFeature) ? remoteFeature : baseRef);
+    log(formatChangeSummary(buildChangeSummary({ git, workHead: beforeFetch, baseHead: git.oid(baseRef), remoteHead: git.exists(remoteFeature) ? git.oid(remoteFeature) : null, notes: work }), { branch, remote: config.remote, base: config.base }));
     scanHistory(git, config, remoteFeature, baseRef, verifiedHistoryBlobs);
     stage = 'merge';
     if (git.exists(remoteFeature)) merge(git, remoteFeature, branch, config, log);
@@ -123,7 +128,7 @@ export async function ship({ cwd = process.cwd(), dryRun = false, message, confi
     if (preflight(git, config) !== branch) fail('CHANGED', 'Branch o‘zgardi.');
     git.assertIdentity(branch, finalHead); git.assertClean();
     if (git.exists(remoteFeature) && git.oid(remoteFeature) === finalHead) { log('Tayyor: remote branch allaqachon shu commitda. Push kerak emas.'); return; }
-    const context = { git, config, branch, remote: config.remote, before: notificationBase, after: finalHead, workHead: beforeFetch, baseHead: git.oid(baseRef), notes: work, pushedAt: new Date().toISOString(), log };
+    const context = { git, config, branch, remote: config.remote, before: notificationBase, after: finalHead, workHead: beforeFetch, baseHead: git.oid(baseRef), notes: work, checks: finalTasks, pushedAt: new Date().toISOString(), log };
     context.reportIntent = await prepareWork(context);
     log(`Push: ${config.remote}/${branch}`);
     stage = 'push';
@@ -144,6 +149,8 @@ export async function ship({ cwd = process.cwd(), dryRun = false, message, confi
     if (!updated) { log('Tayyor: remote branch allaqachon shu commitda. Yangi push xabari yuborilmadi.'); return; }
     log(`Tayyor: ${branch} tekshirildi va push qilindi.`);
     context.pushedAt = new Date().toISOString();
+    try { await draftMR(context); }
+    catch (error) { log(`Push muvaffaqiyatli; MR matni saqlanmadi: ${redact(error.message)}. Push takrorlanmadi.`); }
     try { settleWorkIntent(context); } catch { log('Push tasdiqlandi; kundalik hisobot checkpointini yakunlashda xato. Keyingi tasdiqlashda sana qayta tekshiriladi.'); }
     try { await recordWork(context); }
     catch (error) { log(`Push muvaffaqiyatli; kundalik hisobotga saqlanmadi: ${redact(error.message)}. Push takrorlanmadi.`); }

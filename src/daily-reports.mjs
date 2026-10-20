@@ -8,6 +8,7 @@ import { acquireLock } from './locks.mjs';
 import { fail, redact } from './process.mjs';
 import { summarizeWork, businessText } from './work-summary.mjs';
 import { Git, repository } from './git.mjs';
+import { reportItems, formatReportItems, readReportEdits } from './report-items.mjs';
 
 export const reportDirectory = () => join(dirname(globalConfigPath()), 'reports');
 const sha = text => createHash('sha256').update(text).digest('hex');
@@ -148,22 +149,11 @@ function groups(directory) {
   }
   return [...result.values()].sort((a, b) => a.key.localeCompare(b.key));
 }
-export function formatDailyReport(day, events) {
-  const projects = new Map(), date = day.split('-').reverse().join('.');
-  for (const event of events) {
-    const key = `${event.projectId}:${event.branch}`;
-    if (!projects.has(key)) projects.set(key, { project: clean(event.project), branch: clean(event.branch), items: new Set() });
-    for (const item of event.items) { const safe = businessText(item); if (safe) projects.get(key).items.add(safe); }
-  }
-  let index = 0; const lines = [`${date}  #Qilingan-ishlar`];
-  for (const project of projects.values()) {
-    if (!project.items.size) continue;
-    lines.push('', `${project.project} — ${project.branch}`, ...[...project.items].map(item => `${++index}. ${item}`));
-  }
-  return lines.join('\n');
+export function formatDailyReport(day, events, edits) {
+  return formatReportItems(day, reportItems(events, edits));
 }
 export function previewReports({ directory = reportDirectory() } = {}) {
-  return groups(directory).map(group => ({ ...group, text: formatDailyReport(group.day, group.events) }));
+  return groups(directory).map(group => ({ ...group, text: formatDailyReport(group.day, group.events, readReportEdits(directory, group.day)) }));
 }
 function chunks(text) {
   const result = []; let chunk = '';
@@ -192,12 +182,13 @@ export async function runDueReports({ directory = reportDirectory(), now = new D
           || receipt.messageIds.length > receipt.parts.length || recipientKey(receipt.recipient) !== recipientKey(group.recipient)) fail('REPORT', 'Hisobot yuborish checkpointi noto‘g‘ri.');
       }
       const covered = new Set(receipts.flatMap(({ receipt }) => receipt.eventIds));
-      const previousItems = new Set(group.events.filter(e => covered.has(e.id)).flatMap(e => e.items.map(item => `${e.projectId}:${e.branch}:${item}`)));
+      const edits = readReportEdits(directory, group.day);
+      const previousItems = new Set(reportItems(group.events.filter(e => covered.has(e.id)), edits).map(item => `${item.scope}:${item.text}`));
       const remaining = group.events.filter(e => !covered.has(e.id));
       if (remaining.length) {
-        const fresh = remaining.map(e => ({ ...e, items: e.items.filter(item => !previousItems.has(`${e.projectId}:${e.branch}:${item}`)) }));
+        const fresh = reportItems(remaining, edits).filter(item => !previousItems.has(`${item.scope}:${item.text}`));
         const id = sha(remaining.map(e => e.id).sort().join(',')), path = join(parent, `${group.key}-${id}.json`);
-        const receipt = { version: 1, key: group.key, day: group.day, recipient: group.recipient, eventIds: remaining.map(e => e.id), status: 'pending', parts: fresh.some(e => e.items.length) ? chunks(formatDailyReport(group.day, fresh)) : [], messageIds: [] };
+        const receipt = { version: 1, key: group.key, day: group.day, recipient: group.recipient, eventIds: remaining.map(e => e.id), status: 'pending', parts: fresh.length ? chunks(formatReportItems(group.day, fresh)) : [], messageIds: [] };
         atomicJson(path, receipt); receipts.push({ path, receipt });
       }
       for (const { path, receipt } of receipts) {

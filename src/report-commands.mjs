@@ -3,6 +3,7 @@ import { reportDirectory, reportSettings, previewReports, runDueReports, retryDa
 import { readTelegramStatus } from './telegram-store.mjs';
 import { installReportScheduler, disableReportScheduler, schedulerStatus } from './report-scheduler.mjs';
 import { fail } from './process.mjs';
+import { editReportCommand } from './report-edit.mjs';
 
 export async function reportCommand(args, { directory = reportDirectory(), log = console.log, retryFn = retryDailyReport, runDueFn = runDueReports, installFn = installReportScheduler, telegramStatus = readTelegramStatus } = {}) {
   const outcome = result => {
@@ -13,8 +14,8 @@ export async function reportCommand(args, { directory = reportDirectory(), log =
     }
   };
   const [command, ...rest] = args;
-  if (!['setup', 'status', 'preview', 'run-due', 'disable', 'retry'].includes(command) || command !== 'retry' && rest.length)
-    fail('USAGE', 'Ishlatish: ds reports setup|status|preview|run-due|disable | retry YYYY-MM-DD [--allow-duplicate]');
+  if (!['setup', 'status', 'preview', 'run-due', 'disable', 'retry', 'edit'].includes(command) || !['retry', 'edit'].includes(command) && rest.length || command === 'edit' && rest.length > 1)
+    fail('USAGE', 'Ishlatish: ds reports setup|status|preview|run-due|disable | edit [YYYY-MM-DD] | retry YYYY-MM-DD [--allow-duplicate]');
   if (command === 'setup') {
     const telegram = telegramStatus();
     if (!telegram?.enabled) fail('REPORT', 'Avval ds telegram setup orqali Telegram guruhini ulang.');
@@ -27,6 +28,8 @@ export async function reportCommand(args, { directory = reportDirectory(), log =
     if (config) reportSettings(directory, { ...config, enabled: false });
     if (!disableReportScheduler({ directory })) log('Hisobot o‘chirildi; OS jadvalini o‘chirish tasdiqlanmadi. Jadvalni OS sozlamasidan tekshiring.');
     else log('Kundalik hisobot o‘chirildi. Saqlangan ishlar o‘chirilmagan.');
+  } else if (command === 'edit') {
+    await editReportCommand(rest[0], { directory, log });
   } else if (command === 'preview') {
     const reports = previewReports({ directory });
     for (const report of reports) log(report.text + '\n');

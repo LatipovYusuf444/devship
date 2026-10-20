@@ -1,13 +1,11 @@
-DevShip 2.1.0
+DevShip 2.2.0
 
-Har kuni 18:00 (Asia/Tashkent) da qilingan ishlar hisobotini Telegramga yuborish qo‘shildi. Barcha loyihalar alohida bo‘limda; noutbuk o‘chiq bo‘lsa keyingi kirishda o‘tgan kunlar yetkaziladi.
+Pushdan oldin yangi lokal ishlar, remote feature va main’dan keladigan fayllar alohida ko‘rsatiladi. Sahifalar qisqa, konservativ nomlanadi; qaysi tomonlardan bitta fayl o‘zgargani konflikt tasdig‘i sifatida ko‘rsatilmaydi. Qo‘lda yechilgan unpublished merge ham hisobga olinadi. Dry-run faqat lokal kesh ekanini bildiradi.
 
-Yoqish: ds update, so‘ng ds reports setup. Odatdagi ds push bilan yangi ishlar yig‘iladi. ds reports preview yuborishsiz ko‘rsatadi, ds reports disable to‘xtatadi. Aniq ish nomi uchun --work ixtiyoriy. To‘liq o‘zbekcha yo‘riqnoma: docs/DAILY-REPORTS.md.
+Muvaffaqiyatli pushdan keyin GitLab Merge Request sarlavhasi/tavsifi tayyorlanadi. Ko‘rish: ds mr. Matn feature branchning jami farqiga tegishli; boshqa loyiha/branch matni bilan aralashmaydi. Tanilgan GitLab hostida oldindan to‘ldirilgan havola chiqadi; remote login/paroli saqlanmaydi. MRni yaratish GitLab’da foydalanuvchi tomonidan yakunlanadi.
 
-Main va remote feature’da oldindan mavjud ishlar, checks, API/texnik loglar hisobotga kiritilmaydi. Avtomatik matn sahifa bo‘yicha konservativ; aniqlanmagan xususiyat bajarildi deb taxmin qilmaydi.
+18:00 gacha ds reports edit bilan kundalik ishni tahrirlash yoki bir loyiha/branch/guruhdagi bandlarni birlashtirish mumkin. 1 — tahrir, 1,2 — birlashtirish, Enter — tugatish. Asl push yozuvlari o‘zgarmaydi. Tahrir faqat avvalgi manba bandlariga bog‘lanadi; keyingi pushning umumiy sahifa matniga meros bo‘lmaydi. Eskirgan ro‘yxat, muddat o‘tishi va yuborishga tayyorlangan hisobot tahriri rad etiladi. Telegram yetkazilishi xuddi preview’dagi tahrirdan foydalanadi.
 
-Lokal durable intent, muvaffaqiyat tasdig‘i, atomic journal, repository identity, takror push dedup, kech yozuv batchlari, recipient/topic binding va Unicode checkpointli yetkazish qo‘shildi. Telegram yetkazilishi noaniq bo‘lsa avtomatik takror yo‘q; tasdiqlangan qo‘lda retry bor. Aniq rad etilgan push hisobot bo‘lmaydi.
+Mahalliy to‘liq suite: 157/157 PASS, 0 fail, 0 skip. Mustaqil kod ko‘rigi topgan merge-resolution hisoblash xatosi RED/GREEN regressiya bilan tuzatildi; qayta ko‘rikda Important/Critical muammo qolmadi. Reliz assetlari Windows/macOS/Linux × Node22/24 tekshiruvlaridan keyin chiqariladi.
 
-Windows Task Scheduler, macOS LaunchAgent, Linux systemd user timer integratsiyasi mavjud. Windows’da haqiqiy TASK_VALIDATE_ONLY tekshiruvi va maxsus belgili manzillarda yashirin runnerning argv/exit-code sinovi o‘tdi. Local to‘liq suite 141/141 PASS; reliz CI Windows/macOS/Linux × Node22/24 matritsasidan o‘tmaguncha assetlar chiqarilmaydi.
-
-Oddiy feature push, main merge, konflikt xabarlari va oldingi Telegram sozlamalari saqlangan. OS/internet ishlamasa aniq 18:00 da yetkazish kafolati yo‘q; native scheduler keyingi ishga tushishda catch-up qiladi. macOS/Linux native scheduler xizmatining jonli host sinovi Windows hostida bajarilmagan.
+Avvalgi Telegram guruhi, kundalik jadval va alohida loyiha sozlamalari saqlanadi. Boshqa noutbuklarda ds update bilan yangilang. O‘zbekcha yo‘riqnoma: docs/REVIEW-TOOLS.md.

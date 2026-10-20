@@ -49,3 +49,11 @@ Independent focused reviewers found Important lifecycle/summary/command issues; 
 Actual Windows hidden runner smoke: exact argv/config preserved with spaces, apostrophe, dollar, percent and ampersand in paths; child exit7 propagated. Windows Task Scheduler service accepted TASK_VALIDATE_ONLY; no test task registered. Native Windows live activation is a separate install-time verification. macOS/Linux manifests are tested; their native service execution is not claimed on this host.
 
 OS schedulers are user-scoped, optional and server-free. Credentials remain in existing external Telegram storage; package/source contain no Telegram settings, report journals or private application files. Network delivery tests use fake transport. No fabricated live work report was sent.
+
+## 2.2.0 — summaries, MR drafts and report editing
+
+Final local suite: 157/157 PASS, 0 failures, 0 skips; exact output in test-results.txt. Added real-Git coverage for separate incoming main/remote feature changes, previously pulled main exclusions, overlap semantics, unpublished manual merge resolutions, dry-run immutability, full-branch MR diff and repository isolation. MR draft disk failure never repeats a successful push; no-op and failing checks create no draft. GitLab HTTPS/SCP/SSH URLs preserve encoded fields without credentials.
+
+Report regressions verify immutable original events, edit/merge projection consistency between preview and delivery, scope boundaries, stale revisions, forbidden technical text, cutoff expiry during typing, frozen prepared batches, source-bound future pushes and late event supplementary delivery. Interactive prompts hold no delivery lock. Network tests use fake Telegram transports; no fabricated report or actual app MR was created.
+
+Independent review found one Important issue: manual resolution-only merge work was omitted. An observed failing regression preceded the combined-diff fix, the regression passed, and independent re-review found no remaining Important/Critical issues. Main application source repositories were not changed for these features. Native scheduled reporting continues to use the existing user task and external store.

@@ -1,5 +1,11 @@
 # O‘zgarishlar
 
+## 2.2.0
+
+- Fetchdan keyin, merge’dan oldin yangi lokal ishlar, remote feature va main fayllari alohida xulosa qilinadi. Dry-run lokal kesh ekanini bildiradi.
+- Muvaffaqiyatli pushdan keyin loyiha/branchga tegishli MR sarlavhasi va tavsifi saqlanadi; `ds mr` va tanilgan GitLab hostlari uchun tayyor havola mavjud. Remote’da MR yaratmaydi.
+- `ds reports edit [YYYY-MM-DD]`: 18:00 gacha matn tahriri va bir loyiha/branch/guruhdagi bandlarni birlashtirish. Asl hodisalar o‘zgarmaydi; manba bandiga bog‘langan tahrir, eskirgan ro‘yxat nazorati va yuborish checkpointi himoyasi mavjud.
+
 ## 2.1.0
 
 Ixtiyoriy kundalik ish hisoboti: `ds reports setup` orqali har kuni 18:00 Asia/Tashkent’da Telegramga loyiha/branch bo‘yicha ajratilgan qisqa raqamlangan ishlar yuboriladi. Windows Task Scheduler, macOS LaunchAgent va Linux systemd user timer qo‘llanadi. Noutbuk o‘chiq bo‘lsa keyingi login/tekshiruvda o‘tgan kunlar yetkaziladi.
