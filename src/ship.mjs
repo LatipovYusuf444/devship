@@ -8,6 +8,8 @@ import { fail, redact, ShipError } from './process.mjs';
 import { mergeFailureDetails } from './conflicts.mjs';
 import { notifyPush, notifyFailure } from './telegram.mjs';
 import { setupProject } from './project-setup.mjs';
+import { recordSuccessfulPush, prepareSuccessfulPush, settleWorkIntent } from './daily-reports.mjs';
+import { summarizeWork } from './work-summary.mjs';
 
 function scanPending(git, config) {
   const paths = git.pending();
@@ -41,10 +43,11 @@ function merge(git, ref, branch, config, log) {
   git.assertIdentity(branch); git.assertClean();
 }
 
-export async function ship({ cwd = process.cwd(), dryRun = false, message, configFile, init = false, log = console.log, notify = notifyPush, notifyError = notifyFailure } = {}) {
+export async function ship({ cwd = process.cwd(), dryRun = false, message, configFile, init = false, work = [], log = console.log, notify = notifyPush, notifyError = notifyFailure, recordWork = recordSuccessfulPush, prepareWork = prepareSuccessfulPush } = {}) {
   const output = log; log = value => output(redact(value));
   const root = repository(cwd), config = loadConfig(root, configFile);
   const git = new Git(root, config.timeoutMs);
+  summarizeWork({ notes: work });
   if (init) {
     const path = join(root, '.devship.json');
     try { writeFileSync(path, JSON.stringify({ base: 'main', remote: 'origin', protectedBranches: ['release/*'], exclude: [] }, null, 2) + '\n', { flag: 'wx' }); }
@@ -120,12 +123,19 @@ export async function ship({ cwd = process.cwd(), dryRun = false, message, confi
     if (preflight(git, config) !== branch) fail('CHANGED', 'Branch o‘zgardi.');
     git.assertIdentity(branch, finalHead); git.assertClean();
     if (git.exists(remoteFeature) && git.oid(remoteFeature) === finalHead) { log('Tayyor: remote branch allaqachon shu commitda. Push kerak emas.'); return; }
+    const context = { git, config, branch, remote: config.remote, before: notificationBase, after: finalHead, workHead: beforeFetch, baseHead: git.oid(baseRef), notes: work, pushedAt: new Date().toISOString(), log };
+    context.reportIntent = await prepareWork(context);
     log(`Push: ${config.remote}/${branch}`);
     stage = 'push';
     const result = git.result(['-c', 'push.followTags=false', '-c', `remote.${config.remote}.mirror=false`,
       '-c', 'push.recurseSubmodules=no', 'push', '--porcelain', '--no-follow-tags', '--recurse-submodules=no', '--set-upstream', '--',
       config.remote, `refs/heads/${branch}:refs/heads/${branch}`]);
-    if (!result.ok) fail('PUSH', 'Push rad etildi (remote yangilangan, server himoyasi yoki autentifikatsiya). Lokal commitlar saqlangan. Muammoni tuzatib devship ni qayta bajaring.\n' + result.stderr.slice(-3000));
+    if (!result.ok) {
+      if (result.stdout.split(/\r?\n/).some(line => line.startsWith('!\t'))) {
+        try { settleWorkIntent(context, 'rejected'); } catch { /* unconfirmed intents cannot claim historical success */ }
+      }
+      fail('PUSH', 'Push rad etildi (remote yangilangan, server himoyasi yoki autentifikatsiya). Lokal commitlar saqlangan. Muammoni tuzatib devship ni qayta bajaring.\n' + result.stderr.slice(-3000));
+    }
     published = true;
     const updated = result.stdout.split(/\r?\n/).some(line => {
       const [flag, refs] = line.split('\t');
@@ -133,7 +143,11 @@ export async function ship({ cwd = process.cwd(), dryRun = false, message, confi
     });
     if (!updated) { log('Tayyor: remote branch allaqachon shu commitda. Yangi push xabari yuborilmadi.'); return; }
     log(`Tayyor: ${branch} tekshirildi va push qilindi.`);
-    try { await notify({ git, config, branch, remote: config.remote, before: notificationBase, after: finalHead, pushedAt: new Date().toISOString(), log }); }
+    context.pushedAt = new Date().toISOString();
+    try { settleWorkIntent(context); } catch { log('Push tasdiqlandi; kundalik hisobot checkpointini yakunlashda xato. Keyingi tasdiqlashda sana qayta tekshiriladi.'); }
+    try { await recordWork(context); }
+    catch (error) { log(`Push muvaffaqiyatli; kundalik hisobotga saqlanmadi: ${redact(error.message)}. Push takrorlanmadi.`); }
+    try { await notify(context); }
     catch { log('Push muvaffaqiyatli; Telegram hisoboti tayyorlanmadi. devship telegram status/setup orqali sozlamani tekshiring. Git push takrorlanmadi.'); }
   } catch (error) {
     if (!dryRun && branch && !published && config.telegram !== false && error.code !== 'TASKS_SETUP') {

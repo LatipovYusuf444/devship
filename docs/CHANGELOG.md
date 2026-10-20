@@ -1,5 +1,13 @@
 # O‘zgarishlar
 
+## 2.1.0
+
+Ixtiyoriy kundalik ish hisoboti: `ds reports setup` orqali har kuni 18:00 Asia/Tashkent’da Telegramga loyiha/branch bo‘yicha ajratilgan qisqa raqamlangan ishlar yuboriladi. Windows Task Scheduler, macOS LaunchAgent va Linux systemd user timer qo‘llanadi. Noutbuk o‘chiq bo‘lsa keyingi login/tekshiruvda o‘tgan kunlar yetkaziladi.
+
+Muvaffaqiyatli pushdan oldin durable intent, tasdiqdan keyin lokal journal yoziladi. Main va oldindan remote feature tarixida bor ishlar chiqariladi. Bir xil nomli repo, takror push, kech yozuv, uzun Unicode xabar, Telegram uncertainty va recipient/topic binding himoyalari bor. `--work` aniq inson yozgan ish nomini beradi; avtomatik matn konservativ o‘zbekcha sahifa xulosasi bo‘ladi. API/tekshiruv loglari hisobotga kiritilmaydi.
+
+`reports preview/status/disable` va aniq sana uchun qo‘lda retry qo‘shildi. Oddiy push/merge va avvalgi Telegram xabarlari saqlangan.
+
 ## 2.0.1
 
 Main/feature merge commitlarining barcha parentlariga nisbatan diffida oldindan remote’da bo‘lgan fayllar ham chiqishi hisobga olindi. Tarix skaneri faqat nashr qilingan refdagi aynan bir xil path+mode+blob uchun kontentni qayta yangi sir sifatida skanlamaydi. Yo‘l/symlink himoyasi qoladi; yangi yo‘lga ko‘chirilgan yoki boshqa blobga o‘zgartirilgan kalit bloklanadi. Bu istisno blob skan keshiga qo‘shilmaydi. Remote baseline commit OIDlari scan boshida qotiriladi.

@@ -39,3 +39,13 @@ Ijobiy regressiya oldin SECRET bilan yiqildi, tuzatishdan keyin feature push bil
 Mustaqil read-only ko‘rikda Important/Critical nuqson topilmadi. Kichik tavsiya: remote-feature baseline, fayl mode o‘zgarishi va oldindan nashr qilingan taqiqlangan path uchun alohida regressiyalar qamrovni oshirishi mumkin; ushbu qo‘shimcha qamrov keyinga qoldirildi, aniqlangan funksional nuqson yo‘q.
 
 2.0.1 yakuniy to‘liq suite: 117/117 PASS, fail 0, skip 0, exit 0, 300.429 soniya.
+
+## 2.1.0 — daily work reports
+
+Final local suite: 141/141 PASS, fail 0, skip 0. Exact output: test-results.txt. Added daily time/window, missing-day catch-up, technical/API/secret filtering, root/unknown pages, own-vs-main commits, failed/no-op/dry-run push, durable journal recovery, rejected intent retirement, completion-day and recipient snapshot consistency, same-name repo isolation, event batch dedup, concurrent delivery, long Unicode chunks, retry date scoping and command exit status regressions.
+
+Independent focused reviewers found Important lifecycle/summary/command issues; each was fixed and covered by regressions. Final re-review found no remaining Important/Critical issue. The normal-vs-recovered snapshot test now verifies a fresh normal write as well.
+
+Actual Windows hidden runner smoke: exact argv/config preserved with spaces, apostrophe, dollar, percent and ampersand in paths; child exit7 propagated. Windows Task Scheduler service accepted TASK_VALIDATE_ONLY; no test task registered. Native Windows live activation is a separate install-time verification. macOS/Linux manifests are tested; their native service execution is not claimed on this host.
+
+OS schedulers are user-scoped, optional and server-free. Credentials remain in existing external Telegram storage; package/source contain no Telegram settings, report journals or private application files. Network delivery tests use fake transport. No fabricated live work report was sent.

@@ -4,6 +4,7 @@ import { ShipError, fail, redact } from '../src/process.mjs';
 import { telegramCommand } from '../src/telegram-setup.mjs';
 import { setupProject, doctor } from '../src/project-setup.mjs';
 import { applyUpdate, checkUpdate, updateNotice, installationGate, currentVersion } from '../src/updates.mjs';
+import { reportCommand } from '../src/report-commands.mjs';
 
 const help = `DevShip ${currentVersion} — xavfsiz tekshirish, commit, merge va push
 
@@ -11,6 +12,7 @@ Ishlatish: devship [--dry-run] [-m "commit matni"] [--config path]
            devship --init | --help | --version
            devship setup | doctor | update [check]
            devship telegram setup|status|health|test|retry|disable
+           devship reports setup|status|preview|run-due|disable
 
 Qisqa buyruq: ds (Windows PowerShell’da ds.cmd). Barcha parametrlar bir xil.
 Yangilanish mavjud bo‘lsa terminalda xabar chiqadi. Qo‘llash: ds update.
@@ -19,6 +21,7 @@ Loyiha menejerini bir marta tanlash: ds setup. Holatni tekshirish: ds doctor.
   --dry-run       Faqat lokal rejani ko‘rsatadi; checks/fetch/commit/push yo‘q
   -m, --message   Commit matnini o‘zingiz belgilang (bitta qator)
   --config PATH   Repo rootga nisbatan yoki absolute JSON config
+  --work MATN     Kundalik hisobot uchun qisqa ish nomi (bir nechta berish mumkin)
   --init          Repo rootda .devship.json yaratadi; mavjudini almashtirmaydi
   -h, --help      Yordam
   -v, --version   Versiya
@@ -51,6 +54,10 @@ try {
       else if (!doctor()) process.exitCode = 1;
     }
   } else
+  if (args[0] === 'reports') {
+    if (!['status', 'preview'].includes(args[1])) releaseInstallation = installationGate();
+    await reportCommand(args.slice(1));
+  } else
   if (args[0] === 'telegram') {
     if (args.length !== 2) fail('USAGE', 'Ishlatish: devship telegram setup|status|test|retry|disable');
     if (args[1] !== 'status') releaseInstallation = installationGate();
@@ -59,10 +66,14 @@ try {
   for (let i = 0; i < args.length; i++) {
     const token = args[i];
     const name = ({ '-m': '--message', '-h': '--help', '-v': '--version' })[token] || token;
-    if (seen.has(name)) fail('USAGE', `Takrorlangan parametr: ${token}`); seen.add(name);
+    if (seen.has(name) && name !== '--work') fail('USAGE', `Takrorlangan parametr: ${token}`); seen.add(name);
     if (name === '--dry-run') options.dryRun = true;
     else if (name === '--init') options.init = true;
     else if (name === '--help' || name === '--version') options[name.slice(2)] = true;
+    else if (name === '--work') {
+      const value = args[++i]; if (!value || value.startsWith('--')) fail('USAGE', '--work uchun qisqa ish nomi kerak.');
+      (options.work ||= []).push(value); if (options.work.length > 12) fail('USAGE', 'Bir push uchun ko‘pi bilan 12 ta ish nomi mumkin.');
+    }
     else if (name === '--message' || name === '--config') {
       const value = args[++i]; if (!value || value.startsWith('--')) fail('USAGE', `${token} uchun qiymat kerak.`);
       options[name === '--message' ? 'message' : 'configFile'] = value;

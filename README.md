@@ -4,6 +4,17 @@ Git loyihangizda **bitta `devship` buyrug‘i**: tekshiruv → xavfsiz stage →
 
 Windows, macOS va Linux uchun Node.js CLI. Runtime kutubxonalar yo‘q. AI yoki API kalit kerak emas. Tarqatish: [GitHub Releases](https://github.com/LatipovYusuf444/devship/releases).
 
+## Kundalik ishlar hisoboti
+
+2.1.0 dan muvaffaqiyatli pushlarda qilingan ishlarni saqlab, har kuni **18:00 (Asia/Tashkent)** Telegram guruhiga loyiha bo‘yicha ajratilgan raqamli hisobot yuborish mumkin:
+
+```powershell
+ds.cmd reports setup
+ds.cmd reports status
+```
+
+Keyin odatdagi `ds.cmd` yetadi. Aniqroq qisqa ish nomi: `ds.cmd --work "Monitoring: foydalanuvchi huquqlari tartiblandi"`. `reports preview` yuborishsiz ko‘rsatadi. Noutbuk o‘chiq bo‘lsa keyingi kirishda yuboriladi; ish bo‘lmagan kun bo‘sh xabar tashlamaydi. Checks, API yo‘llari va main’dan kelgan begona ishlar hisobotga kiritilmaydi. [To‘liq yo‘riqnoma](docs/DAILY-REPORTS.md).
+
 ## Bir marta o‘rnatish
 
 Talablar: **Node.js 22+**, npm, **Git 2.30+**. Java loyihalari uchun mos JDK va wrapper yoki Maven/Gradle; pnpm/yarn loyihalari uchun tegishli manager oldindan o‘rnatilgan bo‘lsin. Bog‘liqliklarni loyihangizda odatdagidek o‘rnating; DevShip ularni o‘zi yuklamaydi.
@@ -28,7 +39,7 @@ devship --version
 `DEVSHIP_PAPKASI` — zipdan chiqarilgan `devship` papkasining haqiqiy manzili. Yoki `.tgz` turgan papkada:
 
 ```text
-npm install --global --ignore-scripts ./devship-cli-local-2.0.1.tgz
+npm install --global --ignore-scripts ./devship-cli-local-2.1.0.tgz
 ```
 
 Windows PowerShell `npm.ps1` ni bloklasa, xuddi shu buyruqda `npm.cmd` ishlating. `devship.ps1` bloklansa `devship.cmd` ishlating; execution policy’ni o‘zgartirish shart emas. `devship` topilmasa terminalni qayta oching va npm global bin papkasi PATH ichida ekanini tekshiring. macOS/Linux’da ruxsat muammosi bo‘lsa Node version manager ishlatish qulay.
